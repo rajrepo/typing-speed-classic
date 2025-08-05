@@ -39,6 +39,10 @@ function isMeaningfulSentence(passage, difficulty) {
   const words = text.split(/\s+/).filter(word => word.replace(/[.,!?]/g, '').length >= 3);
   if (words.length < 3) return false;
   
+  // Reject any passages containing Gutenberg-related terms
+  const gutenbergTerms = /\b(gutenberg|project gutenberg|produced by|created by|ebook|etext|isbn|edition|volume|copyright|public domain|gutenberg\.org|this ebook)\b/i;
+  if (gutenbergTerms.test(text)) return false;
+  
   // Should not start with common incomplete patterns
   const incompletePatterns = [
     /^(And|But|Or|So|For|Yet|Because|Since|When|Where|While|If|Although|Though)\s/i,

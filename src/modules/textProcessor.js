@@ -141,6 +141,9 @@ function cleanPassageText(text, difficulty = 'intermediate') {
   if (difficulty === 'beginner') {
     // For beginners: Remove ALL special characters except periods and commas
     cleaned = cleaned
+      // Remove any remaining Gutenberg references first
+      .replace(/\b(gutenberg|project gutenberg|produced by|created by|ebook|etext)\b/gi, '')
+      .replace(/\b(isbn|edition|volume|copyright|public domain)\b/gi, '')
       // Remove quotes, apostrophes, and all other special punctuation
       .replace(/['"'""`]/g, '')              // Remove all types of quotes
       .replace(/[!?;:—–\-\(\)\[\]{}]/g, '')  // Remove exclamation, question, semicolon, colon, dashes, brackets
@@ -156,8 +159,12 @@ function cleanPassageText(text, difficulty = 'intermediate') {
       .replace(/[,]{2,}/g, ',')
       .trim();
   } else {
-    // For intermediate and expert: Normal cleaning
+    // For intermediate and expert: Normal cleaning with Gutenberg filtering
     cleaned = cleaned
+      // Remove any remaining Gutenberg references
+      .replace(/\b(Project Gutenberg|gutenberg\.org|Produced by|Created by)\b/gi, '')
+      .replace(/\b(This eBook|ebook|etext|ISBN|Edition|Volume|Copyright)\b/gi, '')
+      .replace(/\*\*\*[^*]*\*\*\*/g, '') // Remove *** blocks
       // Ensure proper sentence spacing
       .replace(/([.!?])\s+/g, '$1 ')
       // Clean up quotes and apostrophes

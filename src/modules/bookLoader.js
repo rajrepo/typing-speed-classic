@@ -100,7 +100,27 @@ function removeGutenbergHeaders(text) {
     /Project Gutenberg's.*?\n/gi,
     /This eBook is for the use of anyone anywhere.*?\n/gi,
     /Created by Judith Boss.*?\n/gi,
-    /THE MILLENNIUM FULCRUM EDITION.*?\n/gi
+    /THE MILLENNIUM FULCRUM EDITION.*?\n/gi,
+    // Additional comprehensive Gutenberg filtering
+    /\*\*\*.*?gutenberg.*?\*\*\*/gi,
+    /Project Gutenberg Literary Archive Foundation/gi,
+    /gutenberg\.org/gi,
+    /Full Project Gutenberg/gi,
+    /Gutenberg eBook/gi,
+    /eBook of.*?by.*?Project Gutenberg/gi,
+    /This eBook.*?Project Gutenberg/gi,
+    /Distributed Proofreading/gi,
+    /\betext\b/gi,
+    /\bebook\b/gi,
+    /electronic work/gi,
+    /Foundation's EBooks/gi,
+    /Literary Archive Foundation/gi,
+    /replacement or refund.*?defect/gi,
+    /digital copy.*?public domain/gi,
+    /public domain.*?copyright/gi,
+    /ISBN:?\s*[\d-]+/gi,
+    /Copyright.*?\d{4}/gi,
+    /All rights reserved/gi
   ];
   
   let cleanText = text;
@@ -116,7 +136,7 @@ function removeGutenbergHeaders(text) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     // Look for a line that starts the actual content (not metadata)
-    if (line.length > 50 && !line.match(/^(produced|created|project|gutenberg|isbn|title|author|edition)/i)) {
+    if (line.length > 50 && !line.match(/^(produced|created|project|gutenberg|isbn|title|author|edition|copyright|ebook|etext|public domain|full project|literary archive|foundation|distributed|proofreading)/i)) {
       startIndex = i;
       break;
     }
