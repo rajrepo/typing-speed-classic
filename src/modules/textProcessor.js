@@ -31,7 +31,8 @@ export async function processBook(rawText, bookCfg) {
       paragraphs, 
       i, 
       minLength, 
-      maxLength
+      maxLength,
+      bookCfg.difficulty
     );
     
     for (const candidate of candidatePassages) {
@@ -81,9 +82,10 @@ export async function processBook(rawText, bookCfg) {
  * @param {number} startIndex - Starting paragraph index
  * @param {number} minLength - Minimum character length
  * @param {number} maxLength - Maximum character length
+ * @param {string} difficulty - Difficulty level for text cleaning
  * @returns {Array} - Array of candidate passage strings
  */
-function generateCandidatePassages(paragraphs, startIndex, minLength, maxLength) {
+function generateCandidatePassages(paragraphs, startIndex, minLength, maxLength, difficulty = 'intermediate') {
   const candidates = [];
   let currentText = '';
   
@@ -106,7 +108,7 @@ function generateCandidatePassages(paragraphs, startIndex, minLength, maxLength)
       for (const sentence of sentences) {
         const newText = builtText + sentence;
         if (newText.length >= minLength && newText.length <= maxLength) {
-          candidates.push(cleanPassageText(newText.trim()));
+          candidates.push(cleanPassageText(newText.trim(), difficulty));
         }
         builtText = newText;
         
@@ -115,7 +117,7 @@ function generateCandidatePassages(paragraphs, startIndex, minLength, maxLength)
       
       // Also try the full text if it fits
       if (currentText.length <= maxLength) {
-        candidates.push(cleanPassageText(currentText));
+        candidates.push(cleanPassageText(currentText, difficulty));
       }
     }
   }
@@ -126,23 +128,48 @@ function generateCandidatePassages(paragraphs, startIndex, minLength, maxLength)
 /**
  * Clean and normalize passage text
  * @param {string} text - Raw passage text
+ * @param {string} difficulty - Difficulty level (beginner, intermediate, expert)
  * @returns {string} - Cleaned passage text
  */
-function cleanPassageText(text) {
-  return text
+function cleanPassageText(text, difficulty = 'intermediate') {
+  let cleaned = text
     // Normalize whitespace
     .replace(/\s+/g, ' ')
     // Remove leading/trailing whitespace
-    .trim()
-    // Ensure proper sentence spacing
-    .replace(/([.!?])\s+/g, '$1 ')
-    // Clean up quotes and apostrophes
-    .replace(/[""]/g, '"')
-    .replace(/['']/g, "'")
-    // Remove excessive punctuation
-    .replace(/[.]{2,}/g, '...')
-    .replace(/[!]{2,}/g, '!')
-    .replace(/[?]{2,}/g, '?');
+    .trim();
+
+  if (difficulty === 'beginner') {
+    // For beginners: Remove ALL special characters except periods and commas
+    cleaned = cleaned
+      // Remove quotes, apostrophes, and all other special punctuation
+      .replace(/['"'""`]/g, '')              // Remove all types of quotes
+      .replace(/[!?;:—–\-\(\)\[\]{}]/g, '')  // Remove exclamation, question, semicolon, colon, dashes, brackets
+      .replace(/[&@#$%^*+=<>|\\\/~`]/g, '')  // Remove symbols
+      // Keep only letters, numbers, spaces, periods, and commas
+      .replace(/[^\w\s.,]/g, '')
+      // Clean up multiple spaces
+      .replace(/\s+/g, ' ')
+      // Ensure proper sentence spacing with periods
+      .replace(/([.])\s+/g, '$1 ')
+      // Clean up excessive punctuation
+      .replace(/[.]{2,}/g, '.')
+      .replace(/[,]{2,}/g, ',')
+      .trim();
+  } else {
+    // For intermediate and expert: Normal cleaning
+    cleaned = cleaned
+      // Ensure proper sentence spacing
+      .replace(/([.!?])\s+/g, '$1 ')
+      // Clean up quotes and apostrophes
+      .replace(/[""]/g, '"')
+      .replace(/['']/g, "'")
+      // Remove excessive punctuation
+      .replace(/[.]{2,}/g, '...')
+      .replace(/[!]{2,}/g, '!')
+      .replace(/[?]{2,}/g, '?');
+  }
+
+  return cleaned;
 }
 
 /**
