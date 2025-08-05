@@ -494,11 +494,13 @@ window.checkSimplifiedCharacters = async function() {
     const { getPassages } = await import('./modules/passageStore.js');
     const difficulties = ['beginner', 'intermediate'];
     
-    console.log('\n🔍 SIMPLIFIED PASSAGES CHARACTER ANALYSIS');
-    console.log('Checking beginner and intermediate for special characters...\n');
+    console.log('\n🔍 CACHE VALIDATION CHECK');
+    console.log('Verifying that only clean passages were cached...\n');
     
     const allowedCharsOnly = /^[a-zA-Z0-9\s.,]+$/;
     const problematicChars = /[_•·▪▫▲►▼◄○●□■◆◇★☆♦♠♥♣†‡§¶©®™°€£¥$¢'"'""`‚„!?;:—–\-\(\)\[\]{}]/;
+    let totalClean = 0;
+    let totalProblematic = 0;
     
     for (const difficulty of difficulties) {
       const passages = await getPassages(difficulty);
@@ -519,19 +521,22 @@ window.checkSimplifiedCharacters = async function() {
         }
       });
       
-      console.log(`📖 ${difficulty.toUpperCase()}: ${passages.length} total passages`);
+      totalClean += cleanPassages;
+      totalProblematic += problematicPassages.length;
+      
+      console.log(`📖 ${difficulty.toUpperCase()}: ${passages.length} total cached passages`);
       console.log(`   ✅ Clean passages: ${cleanPassages}`);
-      console.log(`   ❌ Passages with special characters: ${problematicPassages.length}`);
+      console.log(`   ❌ Problematic passages: ${problematicPassages.length}`);
       
       if (problematicPassages.length > 0) {
-        console.log(`   First few problematic passages:`);
-        problematicPassages.slice(0, 5).forEach(p => {
+        console.log(`   ⚠️  Found problematic passages in cache (shouldn't happen with new validation!):`);
+        problematicPassages.slice(0, 3).forEach(p => {
           console.log(`      ${p.index}. "${p.text}..."`);
           console.log(`         Special chars: [${p.specialChars.join(', ')}]`);
         });
         
-        if (problematicPassages.length > 5) {
-          console.log(`      ... and ${problematicPassages.length - 5} more with special characters`);
+        if (problematicPassages.length > 3) {
+          console.log(`      ... and ${problematicPassages.length - 3} more`);
         }
       } else {
         console.log(`   🎉 All ${difficulty} passages are perfectly clean!`);
@@ -539,9 +544,31 @@ window.checkSimplifiedCharacters = async function() {
       console.log('');
     }
     
-    alert(`🔍 Simplified passages analysis complete!\n\nBoth beginner and intermediate should only have letters, numbers, spaces, periods, and commas.\n\nCheck console for details.`);
+    if (totalProblematic === 0) {
+      console.log('🎯 SUCCESS: Cache validation working perfectly! All passages are clean.');
+      alert(`✅ Cache validation successful!\n\nAll ${totalClean} cached passages are clean.\nNo special characters found in beginner/intermediate levels.`);
+    } else {
+      console.log(`⚠️  CACHE ISSUE: Found ${totalProblematic} problematic passages that shouldn't be in cache.`);
+      console.log('💡 TIP: Clear cache to regenerate with new validation rules.');
+      alert(`⚠️  Found ${totalProblematic} problematic passages in cache.\n\nThese were cached before the new validation.\nClear cache to regenerate clean passages.`);
+    }
   } catch (error) {
-    console.error('❌ Error checking simplified characters:', error);
+    console.error('❌ Error checking cache validation:', error);
+  }
+};
+
+// Helper to force cache regeneration with new validation
+window.forceCleanCache = async function() {
+  if (confirm('🗑️  This will clear all cached passages and regenerate them with strict validation.\n\nProceed?')) {
+    try {
+      localStorage.clear();
+      indexedDB.deleteDatabase('TypingSpeedDB');
+      alert('✅ Cache cleared! Refreshing page to regenerate clean passages...');
+      location.reload();
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      alert('❌ Error clearing cache. Try manually refreshing the page.');
+    }
   }
 };
 
