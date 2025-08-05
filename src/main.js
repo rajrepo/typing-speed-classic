@@ -456,6 +456,39 @@ window.testMeaningfulSentences = async function() {
   }
 };
 
+window.checkGutenbergCleanup = async function() {
+  try {
+    const { getPassages } = await import('./modules/passageStore.js');
+    const difficulties = ['beginner', 'intermediate', 'expert'];
+    const gutenbergTerms = /\b(gutenberg|project gutenberg|produced by|created by|ebook|etext|isbn|edition|volume|copyright|public domain|gutenberg\.org|this ebook|literary archive|foundation|distributed|proofreading)\b/i;
+    
+    console.log('\n🧹 GUTENBERG CLEANUP ANALYSIS');
+    
+    for (const difficulty of difficulties) {
+      const passages = await getPassages(difficulty);
+      const gutenbergPassages = passages.filter(p => gutenbergTerms.test(p.text));
+      
+      console.log(`\n📖 ${difficulty.toUpperCase()}:`);
+      console.log(`   Total passages: ${passages.length}`);
+      console.log(`   Gutenberg references found: ${gutenbergPassages.length}`);
+      
+      if (gutenbergPassages.length > 0) {
+        console.log(`   ❌ Problematic passages:`);
+        gutenbergPassages.forEach((p, i) => {
+          const match = p.text.match(gutenbergTerms);
+          console.log(`      ${i + 1}. "${p.text.substring(0, 80)}..." (contains: "${match[0]}")`);
+        });
+      } else {
+        console.log(`   ✅ All passages are clean!`);
+      }
+    }
+    
+    alert(`🧹 Gutenberg cleanup analysis complete!\n\nCheck console for detailed results. This verifies no Project Gutenberg references remain in passages.`);
+  } catch (error) {
+    console.error('❌ Error checking Gutenberg cleanup:', error);
+  }
+};
+
 // Initialize application when DOM is loaded
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initApp);
