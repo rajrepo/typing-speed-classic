@@ -572,6 +572,40 @@ window.forceCleanCache = async function() {
   }
 };
 
+// Debug function to test specific text against validation
+window.testValidation = function(text, difficulty = 'beginner') {
+  console.log(`\n🧪 TESTING VALIDATION:`);
+  console.log(`Text: "${text}"`);
+  console.log(`Difficulty: ${difficulty}`);
+  
+  // Test the character pattern
+  const allowedPattern = /^[a-zA-Z0-9\s.,]+$/;
+  const isValidCharSet = allowedPattern.test(text);
+  console.log(`✅ Character set valid: ${isValidCharSet}`);
+  
+  if (!isValidCharSet) {
+    const invalidChars = text.match(/[^a-zA-Z0-9\s.,]/g);
+    console.log(`❌ Invalid characters found: [${[...new Set(invalidChars || [])].join(', ')}]`);
+  }
+  
+  return isValidCharSet;
+};
+
+// Test the specific problematic text you saw
+window.testProblematicText = function() {
+  const problematicText = "_April_ 16.—.";
+  console.log(`\n🚨 TESTING YOUR PROBLEMATIC TEXT:`);
+  const result = window.testValidation(problematicText, 'beginner');
+  
+  if (!result) {
+    console.log(`\n💡 CONCLUSION: This text should have been rejected during caching!`);
+    console.log(`📝 This confirms you have OLD cached passages from before validation was implemented.`);
+    console.log(`🔧 SOLUTION: Run forceCleanCache() to regenerate with proper validation.`);
+  }
+  
+  return result;
+};
+
 // Initialize application when DOM is loaded
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initApp);
