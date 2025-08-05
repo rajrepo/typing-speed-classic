@@ -28,22 +28,44 @@ export async function getRandom(difficulty) {
       return null;
     }
     
-    // Since passages are pre-validated during caching, just get unused ones
+    // Get unused passages and ensure no duplicates
     const unusedPassages = passages.filter(p => !usedPassages[difficulty].has(p.id));
     let candidatePassages = unusedPassages;
     
-    // If all passages used, reset and use all passages
+    // Track session stats
+    const usedCount = usedPassages[difficulty].size;
+    const totalCount = passages.length;
+    const remainingCount = candidatePassages.length;
+    
+    console.log(`📊 ${difficulty.toUpperCase()} Stats: ${usedCount}/${totalCount} used, ${remainingCount} remaining`);
+    
+    // If all passages used, reset and shuffle for fresh randomization
     if (candidatePassages.length === 0) {
-      console.log(`🔄 Resetting used passages for ${difficulty} - all ${passages.length} passages were pre-validated during caching`);
+      console.log(`🔄 All ${totalCount} ${difficulty} passages exhausted - resetting with fresh shuffle`);
       usedPassages[difficulty].clear();
-      candidatePassages = passages;
+      
+      // Shuffle passages for better randomization after reset
+      candidatePassages = shuffleArray(passages);
+      console.log(`🎲 Shuffled ${candidatePassages.length} passages for maximum randomization`);
+    } else {
+      // Shuffle remaining candidates for better randomization
+      candidatePassages = shuffleArray(candidatePassages);
     }
     
-    // Get random passage from candidates
+    // Get random passage from shuffled candidates
     const passage = getRandomFromArray(candidatePassages);
     if (passage) {
       usedPassages[difficulty].add(passage.id);
-      console.log(`✅ Selected pre-validated ${difficulty} passage: "${passage.text.substring(0, 50)}..."`);
+      const newUsedCount = usedPassages[difficulty].size;
+      const newRemainingCount = passages.length - newUsedCount;
+      
+      console.log(`✅ Selected unique ${difficulty} passage (${newUsedCount}/${totalCount}): "${passage.text.substring(0, 50)}..."`);
+      console.log(`📈 Progress: ${newRemainingCount} passages remaining in ${difficulty} pool`);
+      
+      // Warn when approaching exhaustion
+      if (newRemainingCount <= 3 && newRemainingCount > 0) {
+        console.log(`⚠️  Only ${newRemainingCount} ${difficulty} passages left before reset!`);
+      }
     }
     
     return passage;
@@ -109,25 +131,59 @@ export async function getStats(difficulty) {
  * @param {string} difficulty - Difficulty level
  */
 export function resetUsed(difficulty) {
+  const previousCount = usedPassages[difficulty].size;
   usedPassages[difficulty].clear();
+  console.log(`🔄 Manually reset ${previousCount} used ${difficulty} passages - all passages available again`);
 }
 
 /**
  * Reset all used passages
  */
 export function resetAllUsed() {
+  let totalReset = 0;
   Object.keys(usedPassages).forEach(difficulty => {
+    const count = usedPassages[difficulty].size;
+    totalReset += count;
     usedPassages[difficulty].clear();
+    console.log(`🔄 Reset ${count} used ${difficulty} passages`);
   });
+  console.log(`🎯 Total reset: ${totalReset} passages across all difficulties`);
 }
 
 /**
- * Get a random element from an array
+ * Enhanced Fisher-Yates shuffle for better randomization
+ * @param {Array} array - Array to shuffle (creates a copy)
+ * @returns {Array} - Shuffled copy of the array
+ */
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+/**
+ * Get a truly random element from array using crypto-secure randomization when available
  * @param {Array} array - Array to select from
  * @returns {any} - Random element
  */
 function getRandomFromArray(array) {
-  return array[Math.floor(Math.random() * array.length)];
+  if (array.length === 0) return null;
+  if (array.length === 1) return array[0];
+  
+  // Use crypto-secure random if available, fallback to Math.random
+  let randomIndex;
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    const randomArray = new Uint32Array(1);
+    crypto.getRandomValues(randomArray);
+    randomIndex = randomArray[0] % array.length;
+  } else {
+    randomIndex = Math.floor(Math.random() * array.length);
+  }
+  
+  return array[randomIndex];
 }
 
 /**
