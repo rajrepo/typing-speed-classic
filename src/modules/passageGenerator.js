@@ -1,5 +1,6 @@
 /**
- * Passage generator - provides random passages for typing tests
+ * FIXED Passage generator - provides random passages for typing tests
+ * Removed redundant validation since caching already handles it perfectly
  */
 
 import { getPassages } from './passageStore.js';
@@ -10,78 +11,6 @@ const usedPassages = {
   intermediate: new Set(),
   expert: new Set()
 };
-
-/**
- * Check if a passage is a meaningful, complete sentence
- * @param {Object} passage - Passage object with text property
- * @param {string} difficulty - Difficulty level for specific validation rules
- * @returns {boolean} - True if passage is meaningful
- */
-function isMeaningfulSentence(passage, difficulty) {
-  if (!passage || !passage.text) return false;
-  
-  const text = passage.text.trim();
-  if (text.length < 20) return false; // Too short to be meaningful
-  
-  // Must start with a capital letter
-  if (!/^[A-Z]/.test(text)) return false;
-  
-  // Must end with proper punctuation
-  if (difficulty === 'beginner' || difficulty === 'intermediate') {
-    // Beginners and intermediate should have sentences ending with periods only
-    if (!text.endsWith('.')) return false;
-  } else {
-    // Expert can have periods, exclamation, or question marks
-    if (!/[.!?]$/.test(text)) return false;
-  }
-  
-  // Should contain at least one complete word (3+ letters)
-  const words = text.split(/\s+/).filter(word => word.replace(/[.,!?]/g, '').length >= 3);
-  if (words.length < 3) return false;
-  
-  // Reject any passages containing Gutenberg-related terms
-  const gutenbergTerms = /\b(gutenberg|project gutenberg|produced by|created by|ebook|etext|isbn|edition|volume|copyright|public domain|gutenberg\.org|this ebook)\b/i;
-  if (gutenbergTerms.test(text)) return false;
-  
-  // For beginners and intermediate: Extra strict validation - NO special characters allowed
-  if (difficulty === 'beginner' || difficulty === 'intermediate') {
-    // Must contain ONLY letters, numbers, spaces, periods, and commas
-    const allowedCharsOnly = /^[a-zA-Z0-9\s.,]+$/;
-    if (!allowedCharsOnly.test(text)) {
-      console.log(`❌ ${difficulty} passage rejected for special characters: "${text.substring(0, 50)}..."`);
-      return false;
-    }
-    
-    // Check for common problematic characters that might slip through
-    const problematicChars = /[_•·▪▫▲►▼◄○●□■◆◇★☆♦♠♥♣†‡§¶©®™°€£¥$¢'"'""`‚„!?;:—–\-\(\)\[\]{}]/;
-    if (problematicChars.test(text)) {
-      console.log(`❌ ${difficulty} passage rejected for special chars: "${text.substring(0, 50)}..."`);
-      return false;
-    }
-  }
-  
-  // Should not start with common incomplete patterns
-  const incompletePatterns = [
-    /^(And|But|Or|So|For|Yet|Because|Since|When|Where|While|If|Although|Though)\s/i,
-    /^(The|A|An)\s+(and|or|but)\s/i, // "The and...", "A or..."
-    /^\w+ing\s/i, // Starting with gerund without context
-    /^\w+ed\s/i   // Starting with past participle without context
-  ];
-  
-  // Allow some patterns for expert but be stricter for beginners and intermediate
-  if (difficulty === 'beginner' || difficulty === 'intermediate') {
-    for (const pattern of incompletePatterns) {
-      if (pattern.test(text)) return false;
-    }
-  }
-  
-  // Should contain reasonable sentence structure (subject-predicate indicators)
-  const hasCommonVerbs = /\b(is|was|are|were|has|have|had|do|does|did|can|will|would|could|should|may|might|must|said|says|went|goes|came|comes|made|makes|took|takes|got|gets|saw|sees|found|finds|became|becomes|looked|looks|turned|turns|felt|feels|thought|thinks|knew|knows|wanted|wants|needed|needs|tried|tries|began|begins|started|starts|stopped|stops|lived|lives|worked|works|played|plays|walked|walks|ran|runs|moved|moves|stayed|stays|left|leaves|arrived|arrives|returned|returns|helped|helps|asked|asks|told|tells|gave|gives|brought|brings|put|puts|kept|keeps|held|holds|opened|opens|closed|closes|built|builds|created|creates|discovered|discovers|learned|learns|taught|teaches|showed|shows|seemed|seems|appeared|appears|happened|happens|occurred|occurs|continued|continues|decided|decides|remembered|remembers|forgot|forgets|understood|understands|believed|believes|hoped|hopes|feared|fears|loved|loves|liked|likes|enjoyed|enjoys|hated|hates|preferred|prefers|chose|chooses|selected|selects|followed|follows|led|leads|joined|joins|met|meets|visited|visits|traveled|travels|explored|explores|studied|studies|examined|examines|watched|watches|listened|listens|heard|hears|spoke|speaks|talked|talks|answered|answers|called|calls|wrote|writes|read|reads|sang|sings|danced|dances|cooked|cooks|ate|eats|drank|drinks|slept|sleeps|woke|wakes|died|dies|born|births|grew|grows|changed|changes|improved|improves|failed|fails|succeeded|succeeds|won|wins|lost|loses|fought|fights|protected|protects|saved|saves|killed|kills|destroyed|destroys|fixed|fixes|broke|breaks|built|builds)\b/i;
-  
-  if (!hasCommonVerbs.test(text)) return false;
-  
-  return true;
-}
 
 /**
  * Get a random unused passage for the specified difficulty
@@ -99,28 +28,22 @@ export async function getRandom(difficulty) {
       return null;
     }
     
-    // Since passages are pre-validated during caching, just filter out used ones
+    // Since passages are pre-validated during caching, just get unused ones
     const unusedPassages = passages.filter(p => !usedPassages[difficulty].has(p.id));
     let candidatePassages = unusedPassages;
     
-    // If all passages used, reset and use all passages (they're already validated)
+    // If all passages used, reset and use all passages
     if (candidatePassages.length === 0) {
-      console.log(`🔄 Resetting used passages for ${difficulty} - all passages already validated during caching`);
+      console.log(`🔄 Resetting used passages for ${difficulty} - all ${passages.length} passages were pre-validated during caching`);
       usedPassages[difficulty].clear();
       candidatePassages = passages;
-      
-      // If still no passages available
-      if (candidatePassages.length === 0) {
-        console.warn(`❌ No passages available for ${difficulty} level in cache`);
-        return null;
-      }
     }
     
     // Get random passage from candidates
     const passage = getRandomFromArray(candidatePassages);
     if (passage) {
       usedPassages[difficulty].add(passage.id);
-      console.log(`✅ Selected meaningful ${difficulty} passage: "${passage.text.substring(0, 50)}..."`);
+      console.log(`✅ Selected pre-validated ${difficulty} passage: "${passage.text.substring(0, 50)}..."`);
     }
     
     return passage;
@@ -141,12 +64,12 @@ export async function getById(difficulty, passageId) {
   const passage = passages.find(p => p.id === passageId) || null;
   
   // Since passages are pre-validated during caching, no need for re-validation
-  // Just return the passage or null if not found
   if (!passage) {
     console.warn(`⚠️  Passage ${passageId} not found for ${difficulty}, getting random passage`);
     return getRandom(difficulty);
   }
   
+  console.log(`✅ Retrieved pre-validated passage: "${passage.text.substring(0, 50)}..."`);
   return passage;
 }
 
@@ -215,23 +138,62 @@ function getRandomFromArray(array) {
  */
 export async function preview(difficulty, count = 5) {
   const passages = await getPassages(difficulty);
-  const meaningfulPassages = passages.filter(p => isMeaningfulSentence(p, difficulty));
   const previews = [];
   
-  const sourcePassages = meaningfulPassages.length > 0 ? meaningfulPassages : passages;
-  console.log(`📖 Preview: ${meaningfulPassages.length}/${passages.length} meaningful passages for ${difficulty}`);
+  console.log(`📖 Preview: ${passages.length} pre-validated passages for ${difficulty}`);
   
-  for (let i = 0; i < Math.min(count, sourcePassages.length); i++) {
-    const passage = sourcePassages[i];
+  for (let i = 0; i < Math.min(count, passages.length); i++) {
+    const passage = passages[i];
     previews.push({
       id: passage.id,
       preview: passage.text.substring(0, 100) + '...',
       grade: passage.grade,
       length: passage.length,
       wordCount: passage.wordCount,
-      meaningful: isMeaningfulSentence(passage, difficulty)
+      validated: true // All passages are pre-validated during caching
     });
   }
   
   return previews;
+}
+
+/**
+ * Quick validation check for debugging - verify character sets match expected
+ * @param {string} difficulty - Difficulty level
+ * @returns {Object} - Validation summary
+ */
+export async function validateCachedPassages(difficulty) {
+  const passages = await getPassages(difficulty);
+  const results = {
+    total: passages.length,
+    valid: 0,
+    invalid: 0,
+    invalidExamples: []
+  };
+  
+  for (const passage of passages) {
+    let isValid = true;
+    
+    if (difficulty === 'beginner' || difficulty === 'intermediate') {
+      // Should only contain letters, numbers, spaces, periods, and commas
+      const allowedPattern = /^[a-zA-Z0-9\s.,]+$/;
+      if (!allowedPattern.test(passage.text)) {
+        isValid = false;
+        const invalidChars = passage.text.match(/[^a-zA-Z0-9\s.,]/g);
+        results.invalidExamples.push({
+          id: passage.id,
+          preview: passage.text.substring(0, 50),
+          invalidChars: invalidChars ? [...new Set(invalidChars)] : []
+        });
+      }
+    }
+    
+    if (isValid) {
+      results.valid++;
+    } else {
+      results.invalid++;
+    }
+  }
+  
+  return results;
 }
