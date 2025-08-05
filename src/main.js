@@ -53,7 +53,7 @@ async function initApp() {
  * Load application configuration
  */
 async function loadConfig() {
-  const response = await fetch('/data/config.json');
+  const response = await fetch('./data/config.json');
   if (!response.ok) {
     throw new Error(`Failed to load config: ${response.status}`);
   }

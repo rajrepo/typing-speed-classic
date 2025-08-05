@@ -5,7 +5,7 @@
       "title": "Robinson Crusoe",
       "author": "Daniel Defoe",
       "difficulty": "beginner",
-      "file": "/data/books/robinson-crusoe.txt",
+      "file": "./data/books/robinson-crusoe.txt",
       "targetGrade": 6,
       "passageLength": [80, 140]
     },
@@ -14,7 +14,7 @@
       "title": "The Adventures of Tom Sawyer",
       "author": "Mark Twain",
       "difficulty": "intermediate",
-      "file": "/data/books/tom-sawyer.txt",
+      "file": "./data/books/tom-sawyer.txt",
       "targetGrade": 9,
       "passageLength": [120, 180]
     },
@@ -23,7 +23,7 @@
       "title": "On the Origin of Species",
       "author": "Charles Darwin",
       "difficulty": "expert",
-      "file": "/data/books/origin-species.txt",
+      "file": "./data/books/origin-species.txt",
       "targetGrade": 14,
       "passageLength": [160, 240]
     }
