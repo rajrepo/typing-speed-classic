@@ -144,9 +144,9 @@ function cleanPassageText(text, difficulty = 'intermediate') {
       // Remove quotes, apostrophes, and all other special punctuation
       .replace(/['"'""`]/g, '')              // Remove all types of quotes
       .replace(/[!?;:—–\-\(\)\[\]{}]/g, '')  // Remove exclamation, question, semicolon, colon, dashes, brackets
-      .replace(/[&@#$%^*+=<>|\\\/~`]/g, '')  // Remove symbols
-      // Keep only letters, numbers, spaces, periods, and commas
-      .replace(/[^\w\s.,]/g, '')
+      .replace(/[&@#$%^*+=<>|\\\/~`_]/g, '') // Remove symbols INCLUDING underscores
+      // Keep only letters, numbers, spaces, periods, and commas (NOT \w which includes _)
+      .replace(/[^a-zA-Z0-9\s.,]/g, '')
       // Clean up multiple spaces
       .replace(/\s+/g, ' ')
       // Ensure proper sentence spacing with periods
