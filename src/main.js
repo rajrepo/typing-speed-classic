@@ -428,6 +428,34 @@ Grade: ${passage.grade}`);
   }
 };
 
+window.testMeaningfulSentences = async function() {
+  try {
+    const { preview } = await import('./modules/passageGenerator.js');
+    const difficulties = ['beginner', 'intermediate', 'expert'];
+    
+    for (const difficulty of difficulties) {
+      const previews = await preview(difficulty, 10);
+      const meaningful = previews.filter(p => p.meaningful);
+      console.log(`\n📖 ${difficulty.toUpperCase()}: ${meaningful.length}/${previews.length} meaningful passages`);
+      
+      // Show first meaningful passage
+      if (meaningful.length > 0) {
+        console.log(`✅ Sample meaningful passage: "${meaningful[0].preview}"`);
+      }
+      
+      // Show any non-meaningful passages for debugging
+      const nonMeaningful = previews.filter(p => !p.meaningful);
+      if (nonMeaningful.length > 0) {
+        console.log(`❌ Non-meaningful passages found:`, nonMeaningful.map(p => p.preview));
+      }
+    }
+    
+    alert('✅ Check console for meaningful sentence analysis!\n\nThis shows the quality of passages before users see them.');
+  } catch (error) {
+    console.error('❌ Error testing meaningful sentences:', error);
+  }
+};
+
 // Initialize application when DOM is loaded
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initApp);
