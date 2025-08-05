@@ -572,6 +572,35 @@ window.forceCleanCache = async function() {
   }
 };
 
+// Auto-regenerate cache with all validation improvements
+window.regenerateCleanPassages = async function() {
+  console.log('\n🔄 REGENERATING CLEAN PASSAGES');
+  console.log('Clearing old cache and generating fresh passages with all validation rules...\n');
+  
+  try {
+    // Clear all cached data
+    localStorage.clear();
+    indexedDB.deleteDatabase('TypingSpeedDB');
+    
+    console.log('✅ Old cache cleared');
+    console.log('🔄 Refreshing to regenerate with enhanced validation...');
+    console.log('   ✅ Gutenberg filtering');
+    console.log('   ✅ Ultra-strict character filtering');
+    console.log('   ✅ Meaningful sentence validation');
+    console.log('   ✅ Special character removal');
+    
+    // Show progress message
+    alert('🔄 Regenerating clean passages...\n\n✅ Gutenberg filtering\n✅ Character validation\n✅ Meaningful sentences\n\nPage will refresh to apply all improvements!');
+    
+    // Reload to trigger fresh processing
+    location.reload();
+    
+  } catch (error) {
+    console.error('❌ Error regenerating passages:', error);
+    alert('❌ Error during regeneration. Please refresh manually.');
+  }
+};
+
 // Debug function to test specific text against validation
 window.testValidation = function(text, difficulty = 'beginner') {
   console.log(`\n🧪 TESTING VALIDATION:`);
