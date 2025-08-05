@@ -43,6 +43,23 @@ function isMeaningfulSentence(passage, difficulty) {
   const gutenbergTerms = /\b(gutenberg|project gutenberg|produced by|created by|ebook|etext|isbn|edition|volume|copyright|public domain|gutenberg\.org|this ebook)\b/i;
   if (gutenbergTerms.test(text)) return false;
   
+  // For beginners: Extra strict validation - NO special characters allowed
+  if (difficulty === 'beginner') {
+    // Must contain ONLY letters, numbers, spaces, periods, and commas
+    const allowedCharsOnly = /^[a-zA-Z0-9\s.,]+$/;
+    if (!allowedCharsOnly.test(text)) {
+      console.log(`❌ Beginner passage rejected for special characters: "${text.substring(0, 50)}..."`);
+      return false;
+    }
+    
+    // Check for common problematic characters that might slip through
+    const problematicChars = /[_•·▪▫▲►▼◄○●□■◆◇★☆♦♠♥♣†‡§¶©®™°€£¥$¢'"'""`‚„!?;:—–\-\(\)\[\]{}]/;
+    if (problematicChars.test(text)) {
+      console.log(`❌ Beginner passage rejected for special chars: "${text.substring(0, 50)}..."`);
+      return false;
+    }
+  }
+  
   // Should not start with common incomplete patterns
   const incompletePatterns = [
     /^(And|But|Or|So|For|Yet|Because|Since|When|Where|While|If|Although|Though)\s/i,

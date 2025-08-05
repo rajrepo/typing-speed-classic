@@ -144,19 +144,32 @@ function cleanPassageText(text, difficulty = 'intermediate') {
       // Remove any remaining Gutenberg references first
       .replace(/\b(gutenberg|project gutenberg|produced by|created by|ebook|etext)\b/gi, '')
       .replace(/\b(isbn|edition|volume|copyright|public domain)\b/gi, '')
-      // Remove quotes, apostrophes, and all other special punctuation
-      .replace(/['"'""`]/g, '')              // Remove all types of quotes
-      .replace(/[!?;:—–\-\(\)\[\]{}]/g, '')  // Remove exclamation, question, semicolon, colon, dashes, brackets
-      .replace(/[&@#$%^*+=<>|\\\/~`_]/g, '') // Remove symbols INCLUDING underscores
-      // Keep only letters, numbers, spaces, periods, and commas (NOT \w which includes _)
+      // Remove ALL types of bullets and special characters
+      .replace(/[•·▪▫▲►▼◄○●□■◆◇]/g, '')      // Remove bullet points and shapes
+      .replace(/[★☆♦♠♥♣]/g, '')              // Remove stars and card suits
+      .replace(/[†‡§¶]/g, '')                 // Remove section markers
+      .replace(/[©®™°]/g, '')                 // Remove copyright and symbols
+      .replace(/[€£¥$¢]/g, '')                // Remove currency symbols
+      .replace(/[αβγδεζηθικλμνξοπρστυφχψω]/g, '') // Remove Greek letters
+      .replace(/['"'""`‚„]/g, '')             // Remove ALL quote variations
+      .replace(/[!?;:—–\-\(\)\[\]{}]/g, '')   // Remove punctuation and brackets
+      .replace(/[&@#$%^*+=<>|\\\/~`_]/g, '')  // Remove symbols and underscores
+      .replace(/[‰‱]/g, '')                   // Remove percentage symbols
+      .replace(/[±×÷≠≤≥≈]/g, '')              // Remove math symbols
+      .replace(/[←↑→↓↔]/g, '')                // Remove arrows
+      .replace(/[\u2000-\u206F]/g, '')        // Remove general punctuation Unicode block
+      .replace(/[\u2190-\u21FF]/g, '')        // Remove arrows Unicode block
+      .replace(/[\u2600-\u26FF]/g, '')        // Remove miscellaneous symbols
+      .replace(/[\u2700-\u27BF]/g, '')        // Remove dingbats
+      // ULTRA-STRICT: Keep ONLY letters, numbers, spaces, periods, and commas
       .replace(/[^a-zA-Z0-9\s.,]/g, '')
-      // Clean up multiple spaces
+      // Clean up multiple spaces and punctuation
       .replace(/\s+/g, ' ')
-      // Ensure proper sentence spacing with periods
       .replace(/([.])\s+/g, '$1 ')
-      // Clean up excessive punctuation
       .replace(/[.]{2,}/g, '.')
       .replace(/[,]{2,}/g, ',')
+      // Remove any remaining non-printable characters
+      .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
       .trim();
   } else {
     // For intermediate and expert: Normal cleaning with Gutenberg filtering
