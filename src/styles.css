@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for typing highlighting */
+.mark-current { 
+  @apply bg-amber-400 text-gray-900; 
+}
+
+.mark-wrong { 
+  @apply bg-red-500 text-white; 
+}
+
+.mark-correct {
+  @apply text-green-400;
+}
+
+/* Smooth transitions */
+#type-box:focus {
+  @apply ring-2 ring-amber-400 ring-opacity-50;
+}
+
+/* Typing box specific styling */
+#type-box {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  font-family: inherit;
+  line-height: 1.75;
+}
+
+/* Ensure typing box height matches passage box */
+#type-box, #passage-box {
+  min-height: 8rem; /* 128px */
+}
+
+/* Difficulty card styles */
+.difficulty-card {
+  @apply bg-gray-800 border border-gray-700 p-4 rounded-lg cursor-pointer transition-all duration-200 hover:border-gray-600;
+}
+
+.difficulty-card.selected {
+  @apply border-amber-400 bg-gray-700;
+}
+
+.difficulty-card:hover {
+  @apply transform scale-105;
+}
+
+/* Passage box styling */
+#passage-box {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: 100%;
+  line-height: 1.8;
+}
+
+/* Animation for loading */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.loading-text {
+  animation: pulse 2s infinite;
+}

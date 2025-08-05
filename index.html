@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Speed Classic</title>
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body class="bg-gray-900 text-gray-100">
+  <main id="app" class="mx-auto max-w-3xl p-4">
+    <!-- Header -->
+    <header class="text-center mb-8">
+      <h1 class="text-3xl font-bold mb-2">Typing Speed Classic</h1>
+      <p class="text-gray-400">Test your typing speed with classic literature</p>
+      <p class="text-gray-500 text-sm mt-2">🎯 Built to kill time, one keystroke at a time</p>
+    </header>
+
+    <!-- Loading state -->
+    <div id="loading" class="text-center py-8">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400 mx-auto mb-4"></div>
+      <p class="text-gray-400">Loading books...</p>
+    </div>
+
+    <!-- Main app (hidden initially) -->
+    <div id="main-app" class="hidden">
+      <!-- Difficulty picker -->
+      <section id="difficulty-picker" class="grid sm:grid-cols-3 gap-4 my-4"></section>
+
+      <!-- Passage display and input -->
+      <section class="space-y-4">
+        <div id="passage-box" class="text-lg leading-7 font-mono bg-gray-800 p-4 rounded border border-gray-700 min-h-32 w-full overflow-hidden break-words"></div>
+        <textarea id="type-box"
+                  class="w-full bg-gray-800 border border-gray-700 p-4 rounded focus:outline-none focus:border-amber-400 font-mono text-lg leading-7 min-h-32 resize-none overflow-hidden"
+                  autocomplete="off" 
+                  spellcheck="false" 
+                  placeholder="Start typing..." 
+                  disabled
+                  rows="4"></textarea>
+      </section>
+
+      <!-- Live stats -->
+      <section id="stats" class="flex flex-wrap gap-6 mt-6 text-center justify-center">
+        <div class="bg-gray-800 p-4 rounded">
+          <div class="text-2xl font-bold text-amber-400" id="wpm">0</div>
+          <div class="text-sm text-gray-400">WPM</div>
+        </div>
+        <div class="bg-gray-800 p-4 rounded">
+          <div class="text-2xl font-bold text-green-400" id="accuracy">0</div>
+          <div class="text-sm text-gray-400">Accuracy %</div>
+        </div>
+        <div class="bg-gray-800 p-4 rounded">
+          <div class="text-2xl font-bold text-blue-400" id="timer">00:00</div>
+          <div class="text-sm text-gray-400">Time</div>
+        </div>
+      </section>
+
+      <!-- Action buttons -->
+      <section class="text-center mt-6">
+        <button id="new-passage-btn" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded font-semibold transition-colors">
+          New Passage
+        </button>
+      </section>
+    </div>
+
+    <!-- Completion modal -->
+    <div id="completion-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+      <div class="bg-gray-800 p-6 rounded-lg max-w-md w-full mx-4">
+        <h2 class="text-2xl font-bold text-center mb-4">Test Complete!</h2>
+        <div id="completion-stats" class="space-y-2 mb-6"></div>
+        <div class="flex gap-3 justify-center">
+          <button id="try-again-btn" class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded font-semibold transition-colors">
+            Try Again
+          </button>
+          <button id="new-passage-modal-btn" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded font-semibold transition-colors">
+            New Passage
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
