@@ -489,6 +489,57 @@ window.checkGutenbergCleanup = async function() {
   }
 };
 
+window.checkBeginnerCharacters = async function() {
+  try {
+    const { getPassages } = await import('./modules/passageStore.js');
+    const passages = await getPassages('beginner');
+    
+    console.log('\n🔍 BEGINNER CHARACTER ANALYSIS');
+    console.log(`Total beginner passages: ${passages.length}`);
+    
+    const allowedCharsOnly = /^[a-zA-Z0-9\s.,]+$/;
+    const problematicChars = /[_•·▪▫▲►▼◄○●□■◆◇★☆♦♠♥♣†‡§¶©®™°€£¥$¢'"'""`‚„!?;:—–\-\(\)\[\]{}]/;
+    
+    let cleanPassages = 0;
+    let problematicPassages = [];
+    
+    passages.forEach((passage, i) => {
+      if (allowedCharsOnly.test(passage.text) && !problematicChars.test(passage.text)) {
+        cleanPassages++;
+      } else {
+        // Find the problematic characters
+        const specialChars = passage.text.match(/[^a-zA-Z0-9\s.,]/g);
+        problematicPassages.push({
+          index: i + 1,
+          text: passage.text.substring(0, 100),
+          specialChars: specialChars ? [...new Set(specialChars)] : []
+        });
+      }
+    });
+    
+    console.log(`✅ Clean passages: ${cleanPassages}`);
+    console.log(`❌ Passages with special characters: ${problematicPassages.length}`);
+    
+    if (problematicPassages.length > 0) {
+      console.log('\n❌ PROBLEMATIC PASSAGES:');
+      problematicPassages.slice(0, 10).forEach(p => {
+        console.log(`   ${p.index}. "${p.text}..."`);
+        console.log(`      Special chars found: [${p.specialChars.join(', ')}]`);
+      });
+      
+      if (problematicPassages.length > 10) {
+        console.log(`   ... and ${problematicPassages.length - 10} more`);
+      }
+    } else {
+      console.log('\n🎉 All beginner passages are perfectly clean!');
+    }
+    
+    alert(`🔍 Beginner character analysis complete!\n\nClean passages: ${cleanPassages}/${passages.length}\nCheck console for details about any special characters found.`);
+  } catch (error) {
+    console.error('❌ Error checking beginner characters:', error);
+  }
+};
+
 // Initialize application when DOM is loaded
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initApp);
