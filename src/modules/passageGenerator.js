@@ -27,11 +27,11 @@ function isMeaningfulSentence(passage, difficulty) {
   if (!/^[A-Z]/.test(text)) return false;
   
   // Must end with proper punctuation
-  if (difficulty === 'beginner') {
-    // Beginners should have sentences ending with periods only
+  if (difficulty === 'beginner' || difficulty === 'intermediate') {
+    // Beginners and intermediate should have sentences ending with periods only
     if (!text.endsWith('.')) return false;
   } else {
-    // Intermediate/expert can have periods, exclamation, or question marks
+    // Expert can have periods, exclamation, or question marks
     if (!/[.!?]$/.test(text)) return false;
   }
   
@@ -43,19 +43,19 @@ function isMeaningfulSentence(passage, difficulty) {
   const gutenbergTerms = /\b(gutenberg|project gutenberg|produced by|created by|ebook|etext|isbn|edition|volume|copyright|public domain|gutenberg\.org|this ebook)\b/i;
   if (gutenbergTerms.test(text)) return false;
   
-  // For beginners: Extra strict validation - NO special characters allowed
-  if (difficulty === 'beginner') {
+  // For beginners and intermediate: Extra strict validation - NO special characters allowed
+  if (difficulty === 'beginner' || difficulty === 'intermediate') {
     // Must contain ONLY letters, numbers, spaces, periods, and commas
     const allowedCharsOnly = /^[a-zA-Z0-9\s.,]+$/;
     if (!allowedCharsOnly.test(text)) {
-      console.log(`❌ Beginner passage rejected for special characters: "${text.substring(0, 50)}..."`);
+      console.log(`❌ ${difficulty} passage rejected for special characters: "${text.substring(0, 50)}..."`);
       return false;
     }
     
     // Check for common problematic characters that might slip through
     const problematicChars = /[_•·▪▫▲►▼◄○●□■◆◇★☆♦♠♥♣†‡§¶©®™°€£¥$¢'"'""`‚„!?;:—–\-\(\)\[\]{}]/;
     if (problematicChars.test(text)) {
-      console.log(`❌ Beginner passage rejected for special chars: "${text.substring(0, 50)}..."`);
+      console.log(`❌ ${difficulty} passage rejected for special chars: "${text.substring(0, 50)}..."`);
       return false;
     }
   }
@@ -68,8 +68,8 @@ function isMeaningfulSentence(passage, difficulty) {
     /^\w+ed\s/i   // Starting with past participle without context
   ];
   
-  // Allow some patterns for intermediate/expert but be stricter for beginners
-  if (difficulty === 'beginner') {
+  // Allow some patterns for expert but be stricter for beginners and intermediate
+  if (difficulty === 'beginner' || difficulty === 'intermediate') {
     for (const pattern of incompletePatterns) {
       if (pattern.test(text)) return false;
     }

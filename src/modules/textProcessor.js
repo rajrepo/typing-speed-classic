@@ -138,8 +138,8 @@ function cleanPassageText(text, difficulty = 'intermediate') {
     // Remove leading/trailing whitespace
     .trim();
 
-  if (difficulty === 'beginner') {
-    // For beginners: Remove ALL special characters except periods and commas
+  if (difficulty === 'beginner' || difficulty === 'intermediate') {
+    // For beginners and intermediate: Remove ALL special characters except periods and commas
     cleaned = cleaned
       // Remove any remaining Gutenberg references first
       .replace(/\b(gutenberg|project gutenberg|produced by|created by|ebook|etext)\b/gi, '')
@@ -172,7 +172,7 @@ function cleanPassageText(text, difficulty = 'intermediate') {
       .replace(/[\x00-\x1F\x7F-\x9F]/g, '')
       .trim();
   } else {
-    // For intermediate and expert: Normal cleaning with Gutenberg filtering
+    // For expert only: Normal cleaning with Gutenberg filtering but preserve punctuation
     cleaned = cleaned
       // Remove any remaining Gutenberg references
       .replace(/\b(Project Gutenberg|gutenberg\.org|Produced by|Created by)\b/gi, '')
