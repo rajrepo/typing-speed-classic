@@ -76,16 +76,35 @@ export async function processBook(rawText, bookCfg) {
   
   console.log(`Generated ${passages.length} passages for ${bookCfg.title}`);
   
-  // FINAL VALIDATION: Double-check all passages before storing
+  // FINAL VALIDATION: Triple-check all passages before storing
   const validatedPassages = passages.filter(passage => {
-    const isValid = isCharacterSetValid(passage.text, bookCfg.difficulty);
-    if (!isValid) {
-      console.warn(`Rejected passage with invalid characters: "${passage.text.substring(0, 50)}..."`);
+    // Character set validation
+    const hasValidCharacters = isCharacterSetValid(passage.text, bookCfg.difficulty);
+    if (!hasValidCharacters) {
+      console.warn(`❌ CACHE REJECTED: Invalid characters in ${bookCfg.difficulty}: "${passage.text.substring(0, 50)}..."`);
+      return false;
     }
-    return isValid;
+    
+    // Additional meaningful sentence validation
+    const isMeaningful = isPassageSuitableForDifficulty(passage.text, bookCfg.difficulty);
+    if (!isMeaningful) {
+      console.warn(`❌ CACHE REJECTED: Not meaningful for ${bookCfg.difficulty}: "${passage.text.substring(0, 50)}..."`);
+      return false;
+    }
+    
+    // Final character check with detailed logging for debugging
+    if (bookCfg.difficulty === 'beginner' || bookCfg.difficulty === 'intermediate') {
+      const specialChars = passage.text.match(/[^a-zA-Z0-9\s.,]/g);
+      if (specialChars) {
+        console.warn(`❌ CACHE REJECTED: Special chars found [${[...new Set(specialChars)].join(', ')}] in: "${passage.text.substring(0, 50)}..."`);
+        return false;
+      }
+    }
+    
+    return true;
   });
   
-  console.log(`Final count after validation: ${validatedPassages.length} passages for ${bookCfg.title}`);
+  console.log(`✅ CACHED ${validatedPassages.length}/${passages.length} clean passages for ${bookCfg.title}`);
   
   // Store passages in IndexedDB
   await storePassages(bookCfg.difficulty, validatedPassages);

@@ -99,24 +99,19 @@ export async function getRandom(difficulty) {
       return null;
     }
     
-    // Filter out used passages and validate meaningfulness
+    // Since passages are pre-validated during caching, just filter out used ones
     const unusedPassages = passages.filter(p => !usedPassages[difficulty].has(p.id));
-    const meaningfulUnusedPassages = unusedPassages.filter(p => isMeaningfulSentence(p, difficulty));
+    let candidatePassages = unusedPassages;
     
-    // ONLY use meaningful passages - no fallbacks to rejected passages
-    let candidatePassages = meaningfulUnusedPassages;
-    
-    // If all meaningful passages used, reset and try again with ONLY meaningful filter
+    // If all passages used, reset and use all passages (they're already validated)
     if (candidatePassages.length === 0) {
-      console.log(`Resetting used passages for ${difficulty} - looking for meaningful passages only`);
+      console.log(`🔄 Resetting used passages for ${difficulty} - all passages already validated during caching`);
       usedPassages[difficulty].clear();
-      const meaningfulPassages = passages.filter(p => isMeaningfulSentence(p, difficulty));
-      candidatePassages = meaningfulPassages;
+      candidatePassages = passages;
       
-      // If still no meaningful passages available, log warning
+      // If still no passages available
       if (candidatePassages.length === 0) {
-        console.warn(`❌ No meaningful passages available for ${difficulty} level after filtering`);
-        console.warn(`Total passages: ${passages.length}, but none pass meaningfulness validation`);
+        console.warn(`❌ No passages available for ${difficulty} level in cache`);
         return null;
       }
     }
@@ -145,10 +140,11 @@ export async function getById(difficulty, passageId) {
   const passages = await getPassages(difficulty);
   const passage = passages.find(p => p.id === passageId) || null;
   
-  // Validate that the requested passage is meaningful
-  if (passage && !isMeaningfulSentence(passage, difficulty)) {
-    console.warn(`⚠️  Requested passage ${passageId} is not meaningful, trying alternative`);
-    return getRandom(difficulty); // Fallback to a random meaningful passage
+  // Since passages are pre-validated during caching, no need for re-validation
+  // Just return the passage or null if not found
+  if (!passage) {
+    console.warn(`⚠️  Passage ${passageId} not found for ${difficulty}, getting random passage`);
+    return getRandom(difficulty);
   }
   
   return passage;
