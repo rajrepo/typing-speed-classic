@@ -103,15 +103,22 @@ export async function getRandom(difficulty) {
     const unusedPassages = passages.filter(p => !usedPassages[difficulty].has(p.id));
     const meaningfulUnusedPassages = unusedPassages.filter(p => isMeaningfulSentence(p, difficulty));
     
-    // If no meaningful unused passages, try all unused passages as fallback
-    let candidatePassages = meaningfulUnusedPassages.length > 0 ? meaningfulUnusedPassages : unusedPassages;
+    // ONLY use meaningful passages - no fallbacks to rejected passages
+    let candidatePassages = meaningfulUnusedPassages;
     
-    // If all passages used, reset and try again with meaningful filter
+    // If all meaningful passages used, reset and try again with ONLY meaningful filter
     if (candidatePassages.length === 0) {
-      console.log(`Resetting used passages for ${difficulty}`);
+      console.log(`Resetting used passages for ${difficulty} - looking for meaningful passages only`);
       usedPassages[difficulty].clear();
       const meaningfulPassages = passages.filter(p => isMeaningfulSentence(p, difficulty));
-      candidatePassages = meaningfulPassages.length > 0 ? meaningfulPassages : passages;
+      candidatePassages = meaningfulPassages;
+      
+      // If still no meaningful passages available, log warning
+      if (candidatePassages.length === 0) {
+        console.warn(`❌ No meaningful passages available for ${difficulty} level after filtering`);
+        console.warn(`Total passages: ${passages.length}, but none pass meaningfulness validation`);
+        return null;
+      }
     }
     
     // Get random passage from candidates
