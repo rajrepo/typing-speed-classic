@@ -78,21 +78,28 @@ export async function processBook(rawText, bookCfg) {
   
   // FINAL VALIDATION: Triple-check all passages before storing
   const validatedPassages = passages.filter(passage => {
-    // Character set validation
+    // 1. Gutenberg content filter - reject any passage containing Gutenberg references
+    const gutenbergTerms = /\b(gutenberg|project gutenberg|produced by|created by|ebook|etext|isbn|edition|volume|copyright|public domain|gutenberg\.org|this ebook|literary archive|foundation|distributed proofreading)\b/i;
+    if (gutenbergTerms.test(passage.text)) {
+      console.warn(`❌ CACHE REJECTED: Contains Gutenberg reference in ${bookCfg.difficulty}: "${passage.text.substring(0, 50)}..."`);
+      return false;
+    }
+    
+    // 2. Character set validation
     const hasValidCharacters = isCharacterSetValid(passage.text, bookCfg.difficulty);
     if (!hasValidCharacters) {
       console.warn(`❌ CACHE REJECTED: Invalid characters in ${bookCfg.difficulty}: "${passage.text.substring(0, 50)}..."`);
       return false;
     }
     
-    // Additional meaningful sentence validation
+    // 3. Meaningful sentence validation
     const isMeaningful = isPassageSuitableForDifficulty(passage.text, bookCfg.difficulty);
     if (!isMeaningful) {
       console.warn(`❌ CACHE REJECTED: Not meaningful for ${bookCfg.difficulty}: "${passage.text.substring(0, 50)}..."`);
       return false;
     }
     
-    // Final character check with detailed logging for debugging
+    // 4. Final character check with detailed logging for debugging
     if (bookCfg.difficulty === 'beginner' || bookCfg.difficulty === 'intermediate') {
       const specialChars = passage.text.match(/[^a-zA-Z0-9\s.,]/g);
       if (specialChars) {
@@ -277,6 +284,12 @@ function cleanPassageText(text, difficulty = 'intermediate') {
  * @returns {boolean} - True if suitable
  */
 function isPassageSuitableForDifficulty(text, difficulty) {
+  // First check: reject any Gutenberg references (redundant but thorough)
+  const gutenbergTerms = /\b(gutenberg|project gutenberg|produced by|created by|ebook|etext|isbn|edition|volume|copyright|public domain|gutenberg\.org|this ebook|literary archive|foundation|distributed proofreading)\b/i;
+  if (gutenbergTerms.test(text)) {
+    return false;
+  }
+  
   if (difficulty === 'beginner' || difficulty === 'intermediate') {
     // Double-check character set one more time
     if (!/^[a-zA-Z0-9\s.,]+$/.test(text)) {
